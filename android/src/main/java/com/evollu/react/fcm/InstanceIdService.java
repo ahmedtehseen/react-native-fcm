@@ -11,20 +11,21 @@ import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactContext;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.FirebaseInstanceIdService;
+// import com.google.firebase.iid.FirebaseInstanceIdService;
+import com.google.firebase.messaging.FirebaseMessagingService;
 
-public class InstanceIdService extends FirebaseInstanceIdService {
+public class InstanceIdService extends FirebaseMessagingService {
 
     private static final String TAG = "InstanceIdService";
 
     /**
-     * Called if InstanceID token is updated. This may occur if the security of
-     * the previous token had been compromised. This call is initiated by the
-     * InstanceID provider.
+     * Called if InstanceID token is updated. This may occur if the security of the
+     * previous token had been compromised. This call is initiated by the InstanceID
+     * provider.
      */
     // [START refresh_token]
     @Override
-    public void onTokenRefresh() {
+    public void onNewToken(String token) { // Added onNewToken method
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + refreshedToken);
@@ -41,18 +42,20 @@ public class InstanceIdService extends FirebaseInstanceIdService {
         handler.post(new Runnable() {
             public void run() {
                 // Construct and load our normal React JS code bundle
-                ReactInstanceManager mReactInstanceManager = ((ReactApplication) getApplication()).getReactNativeHost().getReactInstanceManager();
+                ReactInstanceManager mReactInstanceManager = ((ReactApplication) getApplication()).getReactNativeHost()
+                        .getReactInstanceManager();
                 ReactContext context = mReactInstanceManager.getCurrentReactContext();
                 // If it's constructed, send a notification
                 if (context != null) {
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(message);
                 } else {
                     // Otherwise wait for construction, then send the notification
-                    mReactInstanceManager.addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
-                        public void onReactContextInitialized(ReactContext context) {
-                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(message);
-                        }
-                    });
+                    mReactInstanceManager
+                            .addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+                                public void onReactContextInitialized(ReactContext context) {
+                                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(message);
+                                }
+                            });
                     if (!mReactInstanceManager.hasStartedCreatingInitialContext()) {
                         // Construct it in the background
                         mReactInstanceManager.createReactContextInBackground();
